@@ -1,11 +1,19 @@
-# M5Stack Core2でLVGLを使うためのテンプレート
+# M5Stack Core2でLVGLを使うための雛型
 
-platformio用．
+VSCode + PlatformIO用．
+
+![demo](demo.gif)
 
 ## 基本的な考え方
 
+* 複数の画面を切り替えながら操作するようなアプリケーションを想定．
+* 1画面を1つの単位としてプログラミング．
+* LVGLの細々したところはmain.cppから追い出す．
+
 ScreenBaseクラスから，用途毎に各スクリーンを派生させ，1画面=1インスタンスを作る．
 その画面をScreenManagerに登録することで，画面の切り替えを行えるようにする．
+
+コールバックの雛型も含める．
 
 ## 編集が必要なファイル
 
@@ -19,6 +27,42 @@ M5stackの初期化を行い，さらに，lvgl_setup() を呼び出してLGVL�
 
 ### loop()
 各種処理(センサの読み出し等)を行い，さらに，ScreenManagerのloop()を呼び出す．これで，現在表示中のスクリーンのloop()が呼ばれる．
+
+### main.cppの雰囲気
+
+```C++
+void setup() 
+{
+    auto cfg = M5.config();
+    M5.begin(cfg);
+
+    // LVGLの初期化
+    lvgl_setup();
+
+    // 各スクリーンのセットアップ
+    scrn_main.setup();
+    scrn_shutdown.setup();
+
+    // スクリーンマネージャにスクリーンを追加
+    // 最初に追加したスクリーンが最初に表示されるスクリーンになる
+    scrn_manager.add_screen(SCREEN_ID_MAIN, &scrn_main);
+    scrn_manager.add_screen(SCREEN_ID_SHUTDOWN, &scrn_shutdown);
+}
+
+
+void loop() 
+{
+    M5.update();
+
+    // ここに各種処理を追加
+
+    // LVGLのタスクハンドラを呼び出す
+    lv_task_handler();
+    scrn_manager.loop();
+
+    delay(5);
+}
+```
 
 
 ## ScreenBase クラス
