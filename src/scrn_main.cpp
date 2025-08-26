@@ -16,6 +16,12 @@ void ScreenMain::callback(lv_event_t *e)
         ScreenMain *scrn = static_cast<ScreenMain *>(lv_event_get_user_data(e));
         scrn->on_button(obj);
     }
+    else if (code == LV_EVENT_GESTURE)
+    {
+        ScreenMain *scrn = static_cast<ScreenMain *>(lv_event_get_user_data(e));
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        scrn->on_swipe(dir);
+    }
 }
 
 
@@ -55,8 +61,12 @@ void ScreenMain::setup()
     lv_obj_set_style_text_align(label_counter_val, LV_TEXT_ALIGN_RIGHT, 0);
     lv_obj_align(label_counter_val, LV_ALIGN_CENTER, 0, 80);
 
+    // スワイプジェスチャーの有効化
+    lv_obj_add_event_cb(lv_screen, callback, LV_EVENT_GESTURE, this);
+
     counter = 0;
 }
+
 
 void ScreenMain::loop()
 {
@@ -65,11 +75,27 @@ void ScreenMain::loop()
     lv_label_set_text(label_counter_val, buf);
 }
 
+
 void ScreenMain::on_button(lv_obj_t *btn)
 {
     if (btn == btn_shutdown)
     {
         // Shutdown button pressed
+        change_screen(SCREEN_ID_SHUTDOWN, SCREEN_ANIM_RIGHT);
+    }
+}
+
+
+void ScreenMain::on_swipe(lv_dir_t dir)
+{
+    if (dir == LV_DIR_LEFT)
+    {
+        // 左スワイプでシャットダウン画面へ
+        change_screen(SCREEN_ID_SHUTDOWN, SCREEN_ANIM_LEFT);
+    }
+    else if (dir == LV_DIR_RIGHT)
+    {
+        // 右スワイプでシャットダウン画面へ
         change_screen(SCREEN_ID_SHUTDOWN, SCREEN_ANIM_RIGHT);
     }
 }

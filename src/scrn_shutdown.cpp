@@ -12,6 +12,12 @@ void ScreenShutdown::callback(lv_event_t *e)
         ScreenShutdown *scrn = static_cast<ScreenShutdown *>(lv_event_get_user_data(e));
         scrn->on_button(obj);
     }
+    else if (code == LV_EVENT_GESTURE)
+    {
+        ScreenShutdown *scrn = static_cast<ScreenShutdown *>(lv_event_get_user_data(e));
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        scrn->on_swipe(dir);
+    }
 }
 
 void ScreenShutdown::on_button(lv_obj_t *btn)
@@ -59,8 +65,26 @@ void ScreenShutdown::setup()
     lv_label_set_text(label, LV_SYMBOL_POWER " Power Off");
     lv_obj_center(label);
 
+    // スワイプジェスチャーの有効化
+    lv_obj_add_event_cb(lv_screen, callback, LV_EVENT_GESTURE, this);
 }
+
 
 void ScreenShutdown::loop()
 {
+}
+
+
+void ScreenShutdown::on_swipe(lv_dir_t dir)
+{
+    if (dir == LV_DIR_LEFT)
+    {
+        // 左スワイプでメイン画面へ
+        change_screen(SCREEN_ID_MAIN, SCREEN_ANIM_LEFT);
+    }
+    else if (dir == LV_DIR_RIGHT)
+    {
+        // 右スワイプでメイン画面へ
+        change_screen(SCREEN_ID_MAIN, SCREEN_ANIM_RIGHT);
+    }
 }

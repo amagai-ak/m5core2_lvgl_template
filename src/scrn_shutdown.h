@@ -17,6 +17,7 @@ public:
     void loop();
     static void callback(lv_event_t *e);
     void on_button(lv_obj_t *btn);
+    void on_swipe(lv_dir_t dir);
 };
 
 #endif // SCRN_SHUTDOWN_H
