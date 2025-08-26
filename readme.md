@@ -1,6 +1,6 @@
 # M5Stack Core2でLVGLを使うための雛型
 
-VSCode + PlatformIO用．
+VSCode + PlatformIO用．LVGLは9.2を使用．
 
 ![demo](demo.gif)
 
