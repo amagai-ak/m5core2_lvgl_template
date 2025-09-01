@@ -54,7 +54,7 @@ void lvgl_setup()
     display = lv_display_create(HOR_RES, VER_RES);
     lv_display_set_flush_cb(display, my_display_flush);
 
-    static lv_color_t buf1[HOR_RES * 15]; 
+    alignas(4) static lv_color_t buf1[HOR_RES * 15]; 
     lv_display_set_buffers(display, buf1, nullptr, sizeof(buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     indev = lv_indev_create();
