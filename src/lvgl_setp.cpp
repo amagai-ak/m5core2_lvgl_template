@@ -7,8 +7,15 @@
 static lv_display_t *display;
 static lv_indev_t *indev;
 
+// 画面解像度
 constexpr int32_t HOR_RES=320;
 constexpr int32_t VER_RES=240;
+
+// 1ピクセルあたりのバイト数
+constexpr int32_t BYTES_PER_PIXEL = (LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565));
+
+// 描画バッファの分割数．大きいほど省メモリになるが，描画が遅くなる．
+constexpr int32_t DISPBUF_DIVIDE = 10;
 
 
 static uint32_t my_tick_function() 
@@ -54,7 +61,7 @@ void lvgl_setup()
     display = lv_display_create(HOR_RES, VER_RES);
     lv_display_set_flush_cb(display, my_display_flush);
 
-    alignas(4) static lv_color_t buf1[HOR_RES * 15]; 
+    alignas(4) static uint8_t buf1[HOR_RES * VER_RES / DISPBUF_DIVIDE * BYTES_PER_PIXEL]; 
     lv_display_set_buffers(display, buf1, nullptr, sizeof(buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     indev = lv_indev_create();
