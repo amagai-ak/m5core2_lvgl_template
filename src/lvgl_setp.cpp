@@ -36,7 +36,7 @@ static void my_display_flush(lv_display_t *disp, const lv_area_t *area, uint8_t 
 
 static void my_touchpad_read(lv_indev_t * drv, lv_indev_data_t * data) 
 {
-    M5.update();
+    // M5.update(); // loop()側で呼び出すように変更したのでコメントアウト
     auto count = M5.Touch.getCount();
 
     if ( count == 0 ) 

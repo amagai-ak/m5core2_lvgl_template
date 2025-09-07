@@ -13,7 +13,7 @@ protected:
     lv_obj_t *btn_shutdown;
 
 public:
-    int counter;
+    unsigned int counter;
     void setup();
     void loop();
     static void callback(lv_event_t *e);

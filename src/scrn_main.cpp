@@ -71,7 +71,7 @@ void ScreenMain::setup()
 void ScreenMain::loop()
 {
     char buf[32];
-    snprintf(buf, sizeof(buf), "%d", ++counter);
+    snprintf(buf, sizeof(buf), "%u", ++counter);
     lv_label_set_text(label_counter_val, buf);
 }
 
