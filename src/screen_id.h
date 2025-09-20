@@ -9,7 +9,7 @@ enum {
     SCREEN_ID_NONE = -1,
     SCREEN_ID_MAIN = 0,
     SCREEN_ID_SHUTDOWN,
-    SCREEN_ID_SETUP
+    SCREEN_ID_TERMINAL
 };
 
 #endif // SCREEN_ID_H

@@ -56,9 +56,11 @@ void loop()
 
     // ここに各種処理を追加
 
+    // 現在表示されているスクリーンのループ処理
+    scrn_manager.loop();
+
     // LVGLのタスクハンドラを呼び出す
     lv_task_handler();
-    scrn_manager.loop();
 
     delay(5);
 }
@@ -100,8 +102,15 @@ loop() を呼ぶことで，現在表示中のスクリーンのloop()を呼び�
 
 change_screen()を呼ぶことで，スクリーンの切り替えを行う．
 
-## フォント
+## 使用したフォント
 
-等幅フォントの作成に，Myricaを使用．
+メイン画面の等幅フォントの作成に，Myricaを使用．
 https://myrica.estable.jp/
 
+ターミナル画面のフォントの作成に，x14y24pxHeadUpDaisyを使用．
+https://hicchicc.github.io/00ff/
+
+### フォントの作成
+fontconverterで，TTFファイルからC言語のソースに変換する．
+
+https://lvgl.io/tools/fontconverter
