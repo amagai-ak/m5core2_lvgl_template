@@ -81,7 +81,7 @@ void ScreenMain::on_button(lv_obj_t *btn)
     if (btn == btn_shutdown)
     {
         // Shutdown button pressed
-        change_screen(SCREEN_ID_SHUTDOWN, SCREEN_ANIM_RIGHT);
+        change_screen(SCREEN_ID_SHUTDOWN, SCREEN_ANIM_LEFT);
     }
 }
 

@@ -25,7 +25,7 @@ void ScreenShutdown::on_button(lv_obj_t *btn)
     if (btn == btn_resume)
     {
         // Resume button pressed
-        change_screen(SCREEN_ID_MAIN, SCREEN_ANIM_LEFT);
+        change_screen(SCREEN_ID_MAIN, SCREEN_ANIM_RIGHT);
     }
     if (btn == btn_poweroff)
     {

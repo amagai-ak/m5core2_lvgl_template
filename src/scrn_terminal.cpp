@@ -207,11 +207,12 @@ void ScreenTerminal::setup()
     lv_obj_set_style_text_font(label_content, &font_head_up_daisy_16, 0);
     lv_label_set_long_mode(label_content, LV_LABEL_LONG_CLIP);
     lv_obj_align(label_content, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_label_set_text(label_content, "");
 
     // スワイプジェスチャーの有効化
     lv_obj_add_event_cb(lv_screen, callback, LV_EVENT_GESTURE, this);
 
-    // 初期化
+    // ターミナルクリア
     clear();
 }
 
@@ -233,7 +234,7 @@ ScreenTerminal::ScreenTerminal()
 
 void ScreenTerminal::print(const char* message)
 {
-        term_buffer->put_string(message);
+    term_buffer->put_string(message);
 }
 
 
