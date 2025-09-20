@@ -77,10 +77,8 @@ void loop()
     if (sec != prec_sec)
     {
         // 1秒ごとの処理をここに追加
-        char  buf[64];
         prec_sec = sec;
-        snprintf(buf, sizeof(buf), "Uptime: %u sec\n", sec);
-        scrn_terminal.print(buf);
+        scrn_terminal.printf("Uptime: %u sec\n", sec);
     }
 
     // 現在表示されているスクリーンのループ処理

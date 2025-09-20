@@ -238,6 +238,25 @@ void ScreenTerminal::print(const char* message)
 }
 
 
+void ScreenTerminal::printf(const char* format, ...)
+{
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    
+    int size = vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    // バッファが足りない場合はエラーメッセージを表示
+    if (size < 0 || size >= sizeof(buffer))
+    {
+        snprintf(buffer, sizeof(buffer), "Error formatting string");
+    }
+
+    print(buffer);
+}
+
+
 void ScreenTerminal::clear()
 {
     term_buffer->clear();

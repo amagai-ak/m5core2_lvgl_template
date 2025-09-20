@@ -12,6 +12,7 @@
 #define SCRN_TERMINAL_H
 #include "screen_base.h"
 #include <sstream>
+#include <cstdarg>
 
 class TermBuffer
 {
@@ -50,6 +51,7 @@ public:
     void setup();
     void loop();
     void print(const char* message);
+    void printf(const char* format, ...);
     void clear();
     void on_swipe(lv_dir_t dir);
     void on_button(lv_obj_t *btn);
