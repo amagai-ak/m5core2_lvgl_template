@@ -66,7 +66,7 @@ void setup()
 
 void loop() 
 {
-    static uint32_t prec_sec = -1;
+    static uint32_t prev_sec = -1;
     uint32_t sec;
 
     M5.update();
@@ -74,10 +74,10 @@ void loop()
     // ここに各種処理を追加
 
     sec = millis() / 1000;
-    if (sec != prec_sec)
+    if (sec != prev_sec)
     {
         // 1秒ごとの処理をここに追加
-        prec_sec = sec;
+        prev_sec = sec;
         scrn_terminal.printf("Uptime: %u sec\n", sec);
     }
 
