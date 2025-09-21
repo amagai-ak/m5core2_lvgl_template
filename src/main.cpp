@@ -66,7 +66,7 @@ void setup()
 
 void loop() 
 {
-    static uint32_t prev_sec = -1;
+    static uint32_t prev_sec = 0;
     uint32_t sec;
 
     M5.update();
