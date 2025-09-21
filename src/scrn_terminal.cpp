@@ -9,9 +9,7 @@
  * 
  * 汎用のテキストターミナル画面
  */
-#include <iostream>
 #include <string>
-#include <sstream>
 #include <cstring>
 
 #include "scrn_main.h"
@@ -26,11 +24,17 @@ LV_FONT_DECLARE(font_head_up_daisy_16);
  */
 void TermBuffer::roll_up()
 {
+    int idx_to, idx_from;
+    // 1行目からheight-1行目までを1行上にコピー
+    idx_to = xy2index(0, 0);
+    idx_from = xy2index(0, 1);
     for (int i = 1; i < height; i++)
     {
-        memcpy(buffer[i - 1], buffer[i], width);
+        memcpy(&buffer[idx_to], &buffer[idx_from], width);
+        idx_to = idx_from;
+        idx_from += width + 1;
     }
-    memset(buffer[height - 1], ' ', width);
+    memset(&buffer[xy2index(0, height - 1)], ' ', width);
     cursor_y = height - 1;
     cursor_x = 0;
 }
@@ -44,15 +48,13 @@ void TermBuffer::roll_up()
  */
 TermBuffer::TermBuffer(int w, int h) : width(w), height(h), cursor_x(0), cursor_y(0)
 {
-    buffer = new char *[height];
+    buffer = new char [(width + 1) * height + 1];
     for (int i = 0; i < height; i++)
     {
-        buffer[i] = new char[width + 1];
-        memset(buffer[i], ' ', width);
-        buffer[i][width] = '\0';
+        memset(&buffer[xy2index(0, i)], ' ', width);
+        buffer[xy2index(width, i)] = '\n';
     }
-
-    oss = "";
+    buffer[sizeof(buffer) - 1] = '\0';
     updated = false;
 }
 
@@ -63,10 +65,6 @@ TermBuffer::TermBuffer(int w, int h) : width(w), height(h), cursor_x(0), cursor_
  */
 TermBuffer::~TermBuffer()
 {
-    for (int i = 0; i < height; i++)
-    {
-        delete[] buffer[i];
-    }
     delete[] buffer;
 }
 
@@ -79,7 +77,7 @@ void TermBuffer::clear()
 {
     for (int i = 0; i < height; i++)
     {
-        memset(buffer[i], ' ', width);
+        memset(&buffer[xy2index(0, i)], ' ', width);
     }
     cursor_x = 0;
     cursor_y = 0;
@@ -127,7 +125,7 @@ void TermBuffer::put_char(char c)
             return;
         }
 
-        buffer[cursor_y][cursor_x] = c;
+        buffer[xy2index(cursor_x, cursor_y)] = c;
         cursor_x++;
         if (cursor_x >= width)
         {
@@ -164,13 +162,7 @@ void TermBuffer::put_string(const char* str)
  */
 const char *TermBuffer::get_content()
 {
-    oss = "";
-    for (int i = 0; i < height; i++)
-    {
-        oss += buffer[i];
-        oss += "\n";
-    }
-    return oss.c_str();
+    return buffer;
 }
 
 
@@ -193,17 +185,20 @@ int TermBuffer::set_cursor(int x, int y)
 }
 
 
+/**
+ * @brief セットアップ
+ * 
+ */
 void ScreenTerminal::setup()
 {
     ScreenBase::setup();
-    term_buffer = new TermBuffer(35, 15);
 
     lv_obj_set_style_bg_color(lv_screen, lv_color_make(1, 22, 13), 0);
 
     label_content = lv_label_create(lv_screen);
     lv_obj_set_width(label_content, 320);
     lv_obj_set_height(label_content, 240);
-    lv_obj_set_style_text_color(label_content, lv_color_make(9, 107, 64), 0);
+    lv_obj_set_style_text_color(label_content, lv_color_make(9, 166, 100), 0);
     lv_obj_set_style_text_font(label_content, &font_head_up_daisy_16, 0);
     lv_label_set_long_mode(label_content, LV_LABEL_LONG_CLIP);
     lv_obj_align(label_content, LV_ALIGN_TOP_LEFT, 0, 0);
@@ -214,27 +209,38 @@ void ScreenTerminal::setup()
 
     // ターミナルクリア
     clear();
+
+    // 定期的に画面を更新するタイマーを設定．
+    // 100msごとに更新．
+    // これ以上の周期で更新してもどうせ読めないので無駄な描画が起きないようにする．
+    lv_timer_create(callback_timer, 100, this);
+
 }
 
 
 void ScreenTerminal::loop()
 {
-    if (term_buffer->is_updated())
-    {
-        lv_label_set_text(label_content, term_buffer->get_content());
-    }
 }
 
 
 ScreenTerminal::ScreenTerminal()
 {
-
+    // 35文字x15行．利用するフォントサイズで調整する．
+    term_buffer = new TermBuffer(35, 15);
+    label_content = nullptr;
 }
 
 
 void ScreenTerminal::print(const char* message)
 {
     term_buffer->put_string(message);
+}
+
+
+void ScreenTerminal::println(const char* message)
+{
+    term_buffer->put_string(message);
+    term_buffer->put_char('\n');
 }
 
 
@@ -263,6 +269,14 @@ void ScreenTerminal::clear()
 }
 
 
+void ScreenTerminal::update()
+{
+    if( term_buffer->is_updated() && label_content != nullptr )
+    {
+        lv_label_set_text(label_content, term_buffer->get_content());
+    }
+}
+
 void ScreenTerminal::callback(lv_event_t *e)
 {
     lv_obj_t *obj = (lv_obj_t *)lv_event_get_target(e);
@@ -279,6 +293,14 @@ void ScreenTerminal::callback(lv_event_t *e)
         scrn->on_swipe(dir);
     }
 }
+
+
+void ScreenTerminal::callback_timer(lv_timer_t *timer)
+{
+    ScreenTerminal *scrn = static_cast<ScreenTerminal *>(lv_timer_get_user_data(timer));
+    scrn->update();
+}
+
 
 void ScreenTerminal::on_button(lv_obj_t *btn)
 {
