@@ -33,7 +33,7 @@ void ScreenMain::setup()
     lv_obj_set_style_bg_color(lv_screen, lv_color_make(0, 0, 0), 0);
 
     label_hello = lv_label_create(lv_screen);
-    lv_label_set_text(label_hello, "Hello, World!");
+    lv_label_set_text(label_hello, "<- Swipe ->");
     lv_obj_set_style_text_color(label_hello, lv_color_make(255, 255, 255), 0);
     lv_obj_align(label_hello, LV_ALIGN_CENTER, 0, 0);
 
