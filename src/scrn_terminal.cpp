@@ -275,6 +275,7 @@ void ScreenTerminal::setup()
     lv_obj_add_event_cb(lv_screen, callback, LV_EVENT_GESTURE, this);
 
     // ラベルをドラッグ操作でスクロールできるようにする
+    lv_obj_add_event_cb(label_content, callback, LV_EVENT_PRESSED, this);
     lv_obj_add_event_cb(label_content, callback, LV_EVENT_PRESSING, this);
 
     // ターミナルクリア
@@ -294,13 +295,22 @@ void ScreenTerminal::loop()
 }
 
 
-
+/**
+ * @brief 画面に文字列を表示する
+ * 
+ * @param message 表示する文字列
+ */
 void ScreenTerminal::print(const char* message)
 {
     term_buffer->put_string(message);
 }
 
 
+/**
+ * @brief 画面に文字列を表示する．改行付き．
+ * 
+ * @param message 表示する文字列
+ */
 void ScreenTerminal::println(const char* message)
 {
     term_buffer->put_string(message);
@@ -308,6 +318,12 @@ void ScreenTerminal::println(const char* message)
 }
 
 
+/**
+ * @brief 画面にフォーマットされた文字列を表示する
+ * 
+ * @param format フォーマット文字列
+ * @param ... 可変長引数
+ */
 void ScreenTerminal::printf(const char* format, ...)
 {
     char buffer[256];
@@ -340,6 +356,7 @@ void ScreenTerminal::update()
         lv_label_set_text(label_content, term_buffer->get_content(scroll_start_line));
     }
 }
+
 
 void ScreenTerminal::callback(lv_event_t *e)
 {
