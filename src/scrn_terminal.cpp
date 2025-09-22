@@ -45,16 +45,35 @@ void TermBuffer::roll_up()
  * 
  * @param w 画面の幅（文字数）
  * @param h 画面の高さ（行数）
+ * @param vh 表示する行数（h以下）。指定しない場合はhと同じ
  */
-TermBuffer::TermBuffer(int w, int h) : width(w), height(h), cursor_x(0), cursor_y(0)
+TermBuffer::TermBuffer(int w, int h, int vh)
 {
-    buffer = new char [(width + 1) * height + 1];
+    width = w;
+    height = h;
+    if( vh > 0 && vh < h )
+    {
+        visible_height = vh;
+    }
+    else
+    {
+        visible_height = height;
+    }
+    cursor_x = 0;
+    cursor_y = 0;
+    ymax = 0;
+    buffer = new char [(width + 1) * height];
+    view_buffer = new char [(width + 1) * visible_height + 1];
     for (int i = 0; i < height; i++)
     {
         memset(&buffer[xy2index(0, i)], ' ', width);
         buffer[xy2index(width, i)] = '\n';
     }
-    buffer[sizeof(buffer) - 1] = '\0';
+    for( int i = 0; i < visible_height; i++ )
+    {
+        view_buffer[i * (width + 1) + width] = '\n';
+    }
+    view_buffer[visible_height * (width + 1)] = '\0';
     updated = false;
 }
 
@@ -81,6 +100,7 @@ void TermBuffer::clear()
     }
     cursor_x = 0;
     cursor_y = 0;
+    ymax = 0;
     updated = true;
 }
 
@@ -137,6 +157,8 @@ void TermBuffer::put_char(char c)
             }
         }
     }
+    if( cursor_y > ymax )
+        ymax = cursor_y;
     updated = true;
 }
 
@@ -160,9 +182,21 @@ void TermBuffer::put_string(const char* str)
  * 
  * @return const char* 
  */
-const char *TermBuffer::get_content()
+const char *TermBuffer::get_content(int start_line)
 {
-    return buffer;
+    if( start_line > ymax - visible_height +1 ) 
+        start_line = ymax - visible_height +1;
+    if( start_line < 0 ) 
+        start_line = 0;
+    int idx_to = 0;
+    int idx_from = xy2index(0, start_line);
+    for( int i = 0; i < visible_height; i++ )
+    {
+        memcpy( &view_buffer[idx_to], &buffer[idx_from], width + 1 );
+        idx_to += width + 1;
+        idx_from += width + 1;
+    }
+    return view_buffer;
 }
 
 
@@ -185,6 +219,26 @@ int TermBuffer::set_cursor(int x, int y)
 }
 
 
+///////////////////////////////////////////////////////////////
+// ScreenTerminal
+///////////////////////////////////////////////////////////////
+
+/**
+ * @brief Construct a new Screen Terminal:: Screen Terminal object
+ * 
+ */
+ScreenTerminal::ScreenTerminal()
+{
+    // 35文字x14行．利用するフォントサイズで調整する．
+    visible_lines = 14; // 表示可能な行数
+    buffer_lines = 30;  // バッファの行数
+    scroll_start_line = buffer_lines - visible_lines;
+    touch_dy = 0;
+    term_buffer = new TermBuffer(35, buffer_lines, visible_lines);
+    label_content = nullptr;
+}
+
+
 /**
  * @brief セットアップ
  * 
@@ -195,6 +249,14 @@ void ScreenTerminal::setup()
 
     lv_obj_set_style_bg_color(lv_screen, lv_color_make(1, 22, 13), 0);
 
+    // さらに行数があることを示すラベル
+    label_more_lines = lv_label_create(lv_screen);
+    lv_obj_set_style_text_color(label_more_lines, lv_color_make(0, 128, 128), 0);
+    lv_obj_set_style_text_font(label_more_lines, &lv_font_montserrat_14, 0);
+    lv_label_set_text(label_more_lines, LV_SYMBOL_DOWN);
+    lv_obj_align(label_more_lines, LV_ALIGN_BOTTOM_MID, 0, -2);
+    lv_obj_add_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN); // 最初は非表示
+
     label_content = lv_label_create(lv_screen);
     lv_obj_set_width(label_content, 320);
     lv_obj_set_height(label_content, 240);
@@ -203,9 +265,17 @@ void ScreenTerminal::setup()
     lv_label_set_long_mode(label_content, LV_LABEL_LONG_CLIP);
     lv_obj_align(label_content, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_label_set_text(label_content, "");
+    // ラベルへのタッチイベントの有効化．デフォルトではラベルはタッチを無視する．
+    lv_obj_add_flag(label_content, LV_OBJ_FLAG_CLICKABLE);
+
+    font_height = lv_font_get_line_height(&font_head_up_daisy_16);
+    touch_dy = 0;
 
     // スワイプジェスチャーの有効化
     lv_obj_add_event_cb(lv_screen, callback, LV_EVENT_GESTURE, this);
+
+    // ラベルをドラッグ操作でスクロールできるようにする
+    lv_obj_add_event_cb(label_content, callback, LV_EVENT_PRESSING, this);
 
     // ターミナルクリア
     clear();
@@ -215,6 +285,7 @@ void ScreenTerminal::setup()
     // これ以上の周期で更新してもどうせ読めないので無駄な描画が起きないようにする．
     lv_timer_create(callback_timer, 100, this);
 
+    // printf("Font height: %d\n", font_height);
 }
 
 
@@ -222,13 +293,6 @@ void ScreenTerminal::loop()
 {
 }
 
-
-ScreenTerminal::ScreenTerminal()
-{
-    // 35文字x15行．利用するフォントサイズで調整する．
-    term_buffer = new TermBuffer(35, 15);
-    label_content = nullptr;
-}
 
 
 void ScreenTerminal::print(const char* message)
@@ -273,7 +337,7 @@ void ScreenTerminal::update()
 {
     if( term_buffer->is_updated() && label_content != nullptr )
     {
-        lv_label_set_text(label_content, term_buffer->get_content());
+        lv_label_set_text(label_content, term_buffer->get_content(scroll_start_line));
     }
 }
 
@@ -281,14 +345,25 @@ void ScreenTerminal::callback(lv_event_t *e)
 {
     lv_obj_t *obj = (lv_obj_t *)lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
+    ScreenTerminal *scrn = static_cast<ScreenTerminal *>(lv_event_get_user_data(e));
     if (code == LV_EVENT_CLICKED)
     {
-        ScreenTerminal *scrn = static_cast<ScreenTerminal *>(lv_event_get_user_data(e));
         scrn->on_button(obj);
+    }
+    else if (code == LV_EVENT_PRESSED)
+    {
+        lv_point_t pos;
+        lv_indev_get_point(lv_indev_get_act(), &pos);
+        scrn->on_press(obj, &pos);
+    }
+    else if (code == LV_EVENT_PRESSING)
+    {
+        lv_point_t vec;
+        lv_indev_get_vect(lv_indev_get_act(), &vec);
+        scrn->on_pressing(obj, &vec);
     }
     else if (code == LV_EVENT_GESTURE)
     {
-        ScreenTerminal *scrn = static_cast<ScreenTerminal *>(lv_event_get_user_data(e));
         lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
         scrn->on_swipe(dir);
     }
@@ -307,6 +382,67 @@ void ScreenTerminal::on_button(lv_obj_t *btn)
     // ボタンが押されたときの処理
 }
 
+
+/**
+ * @brief タッチ開始時の処理
+ * 
+ * @param obj 
+ * @param pos 
+ */
+void ScreenTerminal::on_press(lv_obj_t *obj, lv_point_t *pos)
+{
+    if( obj == label_content )
+    {
+        touch_dy = 0;
+    }
+}
+
+
+/**
+ * @brief ドラッグ操作中の処理
+ * 
+ * @param obj 
+ * @param vec 
+ */
+void ScreenTerminal::on_pressing(lv_obj_t *obj, lv_point_t *vec)
+{
+    if( obj == label_content )
+    {
+        touch_dy += vec->y;
+        if( touch_dy > font_height )
+        {
+            // 下方向にスクロール
+            if( scroll_start_line > 0 )
+            {
+                scroll_start_line--;
+                lv_label_set_text(label_content, term_buffer->get_content(scroll_start_line));
+            }
+            touch_dy = 0;
+        }
+        else if( touch_dy < -font_height )
+        {
+            // 上方向にスクロール
+            if( scroll_start_line < term_buffer->get_line_count() - visible_lines )
+            {
+                scroll_start_line++;
+                lv_label_set_text(label_content, term_buffer->get_content(scroll_start_line));
+            }
+            touch_dy = 0;
+        }
+        // 下端が見えていない場合には矢印を表示する
+        if( scroll_start_line < term_buffer->get_line_count() - visible_lines )
+            lv_obj_clear_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+        else
+            lv_obj_add_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+
+/**
+ * @brief スワイプ操作の処理
+ * 
+ * @param dir スワイプ方向
+ */
 void ScreenTerminal::on_swipe(lv_dir_t dir)
 {
     if (dir == LV_DIR_LEFT)
@@ -316,6 +452,10 @@ void ScreenTerminal::on_swipe(lv_dir_t dir)
     }
 }
 
+
+/**
+ * @brief Destroy the Screen Terminal object
+ */
 ScreenTerminal::~ScreenTerminal()
 {
     delete term_buffer;
