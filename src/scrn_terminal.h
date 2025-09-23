@@ -12,6 +12,8 @@
 #define SCRN_TERMINAL_H
 #include "screen_base.h"
 #include <cstdarg>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
 class TermBuffer
 {
@@ -57,6 +59,7 @@ protected:
     int visible_lines;
     int buffer_lines;
     bool auto_follow;
+    SemaphoreHandle_t mutex;
 
 public:
     ScreenTerminal();

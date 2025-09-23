@@ -240,6 +240,7 @@ ScreenTerminal::ScreenTerminal()
     label_content = nullptr;
     label_more_lines = nullptr;
     auto_follow = true;
+    mutex = xSemaphoreCreateMutex();
 }
 
 
@@ -307,8 +308,10 @@ void ScreenTerminal::loop()
  */
 void ScreenTerminal::print(const char* message)
 {
+    xSemaphoreTake(mutex, portMAX_DELAY);
     term_buffer->put_string(message);
-}
+    xSemaphoreGive(mutex);
+}   
 
 
 /**
@@ -318,8 +321,10 @@ void ScreenTerminal::print(const char* message)
  */
 void ScreenTerminal::println(const char* message)
 {
+    xSemaphoreTake(mutex, portMAX_DELAY);
     term_buffer->put_string(message);
     term_buffer->put_char('\n');
+    xSemaphoreGive(mutex);
 }
 
 
@@ -350,9 +355,11 @@ void ScreenTerminal::printf(const char* format, ...)
 
 void ScreenTerminal::clear()
 {
+    xSemaphoreTake(mutex, portMAX_DELAY);
     term_buffer->clear();
     auto_follow = true;
     scroll_start_line = 0;
+    xSemaphoreGive(mutex);
 }
 
 
@@ -514,4 +521,5 @@ void ScreenTerminal::on_swipe(lv_dir_t dir)
 ScreenTerminal::~ScreenTerminal()
 {
     delete term_buffer;
+    vSemaphoreDelete(mutex);
 }
