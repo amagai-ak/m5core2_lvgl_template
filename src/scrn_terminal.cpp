@@ -85,6 +85,7 @@ TermBuffer::TermBuffer(int w, int h, int vh)
 TermBuffer::~TermBuffer()
 {
     delete[] buffer;
+    delete[] view_buffer;
 }
 
 
