@@ -41,6 +41,7 @@ void setup()
     auto cfg = M5.config();
     M5.begin(cfg);
 
+    Serial.setRxBufferSize(1024);
     Serial.begin(115200);
     setenv("TZ", time_zone, 1);
     tzset();
