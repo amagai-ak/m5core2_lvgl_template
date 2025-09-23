@@ -179,10 +179,10 @@ void TermBuffer::put_string(const char* str)
 
 
 /**
- * @brief 画面の内容を取得する
+ * @brief バッファから表示用の文字列を切り出す
  * @param start_line 取得を開始する行番号（0から始まる）
  * 
- * @return const char* 
+ * @return const char* 切り出した文字列が格納されているポインタ
  */
 const char *TermBuffer::get_content(int start_line)
 {

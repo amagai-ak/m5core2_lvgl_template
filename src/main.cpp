@@ -7,6 +7,19 @@
  * 
  */
 
+/**
+ * @mainpage M5Core2 + LVGL Template
+ * @author amagai
+ * @version 0.1
+ * @copyright Copyright (c) 2025
+ * 
+ * @section 概要
+ * M5Stack Core2でLVGLを使うための雛型プロジェクトです．
+ * LVGLの他に，ArduinoフレームワークとM5Unifiedライブラリを使用しています．
+ * 
+ * LVGLのバージョンは9.2.2を使用しています．https://docs.lvgl.io/9.2/
+ */
+
 #include <Arduino.h>
 #include <M5Unified.h>
 #include <time.h>

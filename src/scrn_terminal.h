@@ -15,18 +15,22 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 
+/**
+ * @brief 端末用バッファクラス
+ * 
+ */
 class TermBuffer
 {
 protected:
-    int width;
-    int height;
-    int visible_height;
-    char *buffer;
-    char *view_buffer;
-    int cursor_x;
-    int cursor_y;
-    int ymax;
-    bool updated;
+    int width;                  ///< 画面の幅（文字数）
+    int height;                 ///< 画面の高さ（行数）
+    int visible_height;        ///< 表示領域の高さ（行数）
+    char *buffer;               ///< バッファ本体
+    char *view_buffer;          ///< 表示用バッファ
+    int cursor_x;              ///< カーソルのX座標
+    int cursor_y;              ///< カーソルのY座標
+    int ymax;                  ///< バッファの最大Y座標
+    bool updated;              ///< 更新フラグ
 
     void roll_up();
     int xy2index(int x, int y) { return y * (width + 1) + x; }
@@ -48,18 +52,22 @@ public:
 };
 
 
+/**
+ * @brief テキストターミナル画面クラス
+ * 
+ */
 class ScreenTerminal : public ScreenBase {
 protected:
-    lv_obj_t *label_content;
-    lv_obj_t *label_more_lines;
-    TermBuffer *term_buffer;
-    int scroll_start_line;
-    int touch_dy;
-    int font_height;
-    int visible_lines;
-    int buffer_lines;
-    bool auto_follow;
-    SemaphoreHandle_t mutex;
+    lv_obj_t *label_content;    ///< ターミナル表示用ラベル
+    lv_obj_t *label_more_lines; ///< さらに行数があることを示すラベル
+    TermBuffer *term_buffer;     ///< ターミナル用バッファ
+    int scroll_start_line;      ///< スクロール開始行
+    int touch_dy;               ///< タッチドラッグ量
+    int font_height;            ///< フォントの高さ
+    int visible_lines;          ///< 表示領域の行数
+    int buffer_lines;           ///< バッファ全体の行数
+    bool auto_follow;          ///< 自動スクロールフラグ
+    SemaphoreHandle_t mutex;   ///< ミューテックス
 
 public:
     ScreenTerminal();
