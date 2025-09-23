@@ -42,7 +42,7 @@ public:
     int get_cursor_y() { return cursor_y; }
     int get_width() { return width; };
     int get_height() { return height; };
-    int get_line_count() { return ymax; };
+    int get_line_count() { return (ymax + 1); };
 };
 
 
@@ -56,6 +56,7 @@ protected:
     int font_height;
     int visible_lines;
     int buffer_lines;
+    bool auto_follow;
 
 public:
     ScreenTerminal();

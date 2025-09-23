@@ -179,6 +179,7 @@ void TermBuffer::put_string(const char* str)
 
 /**
  * @brief 画面の内容を取得する
+ * @param start_line 取得を開始する行番号（0から始まる）
  * 
  * @return const char* 
  */
@@ -232,10 +233,12 @@ ScreenTerminal::ScreenTerminal()
     // 35文字x14行．利用するフォントサイズで調整する．
     visible_lines = 14; // 表示可能な行数
     buffer_lines = 30;  // バッファの行数
-    scroll_start_line = buffer_lines - visible_lines;
+    scroll_start_line = 0;
     touch_dy = 0;
     term_buffer = new TermBuffer(35, buffer_lines, visible_lines);
     label_content = nullptr;
+    label_more_lines = nullptr;
+    auto_follow = true;
 }
 
 
@@ -257,6 +260,7 @@ void ScreenTerminal::setup()
     lv_obj_align(label_more_lines, LV_ALIGN_BOTTOM_MID, 0, -2);
     lv_obj_add_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN); // 最初は非表示
 
+    // コンテンツ表示用のラベル
     label_content = lv_label_create(lv_screen);
     lv_obj_set_width(label_content, 320);
     lv_obj_set_height(label_content, 240);
@@ -346,6 +350,8 @@ void ScreenTerminal::printf(const char* format, ...)
 void ScreenTerminal::clear()
 {
     term_buffer->clear();
+    auto_follow = true;
+    scroll_start_line = 0;
 }
 
 
@@ -353,6 +359,26 @@ void ScreenTerminal::update()
 {
     if( term_buffer->is_updated() && label_content != nullptr )
     {
+        if( auto_follow )
+        {
+            scroll_start_line = term_buffer->get_line_count() - visible_lines;
+            if( scroll_start_line < 0 )
+                scroll_start_line = 0;
+            // auto_followの場合は矢印を非表示にする
+            lv_obj_add_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            // 下端が見えていない場合には矢印を表示する
+            if( scroll_start_line < term_buffer->get_line_count() - visible_lines )
+            {
+                lv_obj_clear_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+            }
+            else
+            {
+                lv_obj_add_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+            }
+        }
         lv_label_set_text(label_content, term_buffer->get_content(scroll_start_line));
     }
 }
@@ -390,7 +416,8 @@ void ScreenTerminal::callback(lv_event_t *e)
 void ScreenTerminal::callback_timer(lv_timer_t *timer)
 {
     ScreenTerminal *scrn = static_cast<ScreenTerminal *>(lv_timer_get_user_data(timer));
-    scrn->update();
+    if( scrn->is_active() )
+        scrn->update();
 }
 
 
@@ -425,6 +452,10 @@ void ScreenTerminal::on_pressing(lv_obj_t *obj, lv_point_t *vec)
 {
     if( obj == label_content )
     {
+        // コンテンツの量が表示領域に収まっている場合はスクロール不要
+        if( term_buffer->get_line_count() <= visible_lines )
+            return;
+
         touch_dy += vec->y;
         if( touch_dy > font_height )
         {
@@ -448,9 +479,15 @@ void ScreenTerminal::on_pressing(lv_obj_t *obj, lv_point_t *vec)
         }
         // 下端が見えていない場合には矢印を表示する
         if( scroll_start_line < term_buffer->get_line_count() - visible_lines )
+        {
             lv_obj_clear_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+            auto_follow = false;
+        }
         else
+        {
             lv_obj_add_flag(label_more_lines, LV_OBJ_FLAG_HIDDEN);
+            auto_follow = true;
+        }
     }
 }
 

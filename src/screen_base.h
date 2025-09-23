@@ -38,7 +38,7 @@ class ScreenBase
         // スクリーンのアンロードが行われる直前に呼ばれる
         virtual int on_unload(void) { return 0; }
 
-        lv_obj_t * get_lv_screen() { return lv_screen; }
+        lv_obj_t * get_lv_screen() const { return lv_screen; }
 
         void set_screen_manager(ScreenManager* manager)
         {
@@ -56,6 +56,11 @@ class ScreenBase
         }
 
         int change_screen(int id, int dir = 0);
+
+        bool is_active() const
+        {
+            return get_lv_screen() == lv_scr_act();
+        }
 };
 
 
