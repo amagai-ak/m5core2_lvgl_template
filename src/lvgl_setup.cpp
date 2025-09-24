@@ -59,10 +59,22 @@ void lvgl_setup()
     lv_tick_set_cb(my_tick_function);
 
     display = lv_display_create(HOR_RES, VER_RES);
-    lv_display_set_flush_cb(display, my_display_flush);
 
-    alignas(4) static uint8_t buf1[HOR_RES * VER_RES / DISPBUF_DIVIDE * BYTES_PER_PIXEL]; 
-    lv_display_set_buffers(display, buf1, nullptr, sizeof(buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
+    // DMA対応ヒープからバッファを割り当て
+    size_t buffer_size = HOR_RES * VER_RES / DISPBUF_DIVIDE * BYTES_PER_PIXEL;
+    uint8_t *buf1 = (uint8_t*)heap_caps_aligned_alloc(4, buffer_size, MALLOC_CAP_DMA);
+  
+    // Serial.printf("Allocated DMA buffer at %p, size: %d bytes\r\n", buf1, buffer_size);
+    // DISPBUF_DIVIDEが10のときに，15360バイト割り当てられるはず．
+    if (buf1 == nullptr) 
+    {
+        // メモリ割り当て失敗
+        Serial.println("Failed to allocate DMA buffer");
+        return;
+    }
+
+    lv_display_set_buffers(display, buf1, nullptr, buffer_size, LV_DISPLAY_RENDER_MODE_PARTIAL);
+    lv_display_set_flush_cb(display, my_display_flush);
 
     indev = lv_indev_create();
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
