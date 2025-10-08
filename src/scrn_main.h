@@ -19,6 +19,8 @@ public:
     static void callback(lv_event_t *e);
     void on_button(lv_obj_t *btn);
     void on_swipe(lv_dir_t dir);
+    void on_btn_A(void);
+    void on_btn_C(void);
 };
 
 #endif // SCRN_MAIN_H

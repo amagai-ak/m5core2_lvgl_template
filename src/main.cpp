@@ -39,7 +39,7 @@ static const char* time_zone  = "JST-9";
 // 各スクリーンのインスタンスを生成
 static ScreenMain scrn_main;
 static ScreenShutdown scrn_shutdown;
-static ScreenTerminal scrn_terminal;
+ScreenTerminal scrn_terminal;
 
 // スクリーンマネージャのインスタンスを生成
 static ScreenManager scrn_manager;

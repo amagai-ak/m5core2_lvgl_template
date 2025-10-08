@@ -2,7 +2,7 @@
  * @file screen_base.cpp
  * @author amagai
  * @brief スクリーン制御のための基本クラスとスクリーン管理クラス
- * @version 0.1
+ * @version 0.2.0
  * @date 2025-07-20
  * 
  * @copyright Copyright (c) 2025
@@ -169,5 +169,24 @@ void ScreenManager::set_current_screen(ScreenBase* screen, int dir)
                 lv_scr_load(current_screen->get_lv_screen());
                 break;
         }
+    }
+}
+
+
+/**
+ * @brief ループ処理を行う．また，ボタン押下イベントを処理する．
+ * 
+ */
+void ScreenManager::loop()
+{
+    if (current_screen)
+    {
+        current_screen->loop();
+        if( M5.BtnA.wasPressed() ) 
+            current_screen->on_btn_A();
+        if( M5.BtnB.wasPressed() ) 
+            current_screen->on_btn_B();
+        if( M5.BtnC.wasPressed() ) 
+            current_screen->on_btn_C();
     }
 }

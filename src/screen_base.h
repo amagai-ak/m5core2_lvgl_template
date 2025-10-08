@@ -2,7 +2,7 @@
  * @file screen_base.h
  * @author amagai
  * @brief スクリーン制御のための基本クラスとスクリーン管理クラス
- * @version 0.1
+ * @version 0.2.0
  * @date 2025-07-20
  * 
  */
@@ -11,6 +11,7 @@
 #define SCREEN_BASE_H
 #include "lvgl.h"
 #include <vector>
+#include <M5Unified.h>
 
 /**
  * @brief 画面遷移アニメーションの種類
@@ -39,7 +40,9 @@ class ScreenBase
         ScreenBase();
         virtual ~ScreenBase();
 
+        /** @brief スクリーンのセットアップを行う */
         virtual void setup();
+
         /** @brief スクリーンがアクティブである間，繰り返し呼ばれる */
         virtual void loop() {}
 
@@ -48,6 +51,15 @@ class ScreenBase
 
         /** @brief スクリーンのアンロードが行われる直前に呼ばれる */
         virtual int on_unload(void) { return 0; }
+
+        /** @brief Aボタンが押されたときに呼ばれる */
+        virtual void on_btn_A(void) {}
+
+        /** @brief Bボタンが押されたときに呼ばれる */
+        virtual void on_btn_B(void) {}
+
+        /** @brief Cボタンが押されたときに呼ばれる */
+        virtual void on_btn_C(void) {}
 
         /** @brief LVGLスクリーンオブジェクトを取得する */
         lv_obj_t * get_lv_screen() const { return lv_screen; }
@@ -70,6 +82,7 @@ class ScreenBase
             return screen_id;
         }
 
+        /** @brief スクリーンを切り替える */
         int change_screen(int id, int dir = 0);
 
         /** @brief このスクリーンが現在アクティブかどうかを返す */
@@ -103,13 +116,7 @@ class ScreenManager
         }
 
         /// 現在表示中のスクリーンのloop処理を呼び出す
-        void loop()
-        {
-            if (current_screen)
-            {
-                current_screen->loop();
-            }
-        }
+        void loop();
 
         void add_screen(int id, ScreenBase* screen);
 

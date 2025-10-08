@@ -5,6 +5,9 @@
 #include "scrn_main.h"
 #include "screen_id.h"
 
+#include "scrn_terminal.h"
+extern ScreenTerminal scrn_terminal;
+
 LV_FONT_DECLARE(myrica_m_24);
 
 void ScreenMain::callback(lv_event_t *e)
@@ -85,6 +88,20 @@ void ScreenMain::on_button(lv_obj_t *btn)
     }
 }
 
+
+void ScreenMain::on_btn_A(void)
+{
+    // BtnAでTerminal画面へ
+    scrn_terminal.println("Switching to Terminal screen...");
+    change_screen(SCREEN_ID_TERMINAL, SCREEN_ANIM_RIGHT);
+}
+
+void ScreenMain::on_btn_C(void)
+{
+    // BtnCでShutdown画面へ
+    scrn_terminal.println("Switching to Shutdown screen...");
+    change_screen(SCREEN_ID_SHUTDOWN, SCREEN_ANIM_LEFT);
+}
 
 void ScreenMain::on_swipe(lv_dir_t dir)
 {
