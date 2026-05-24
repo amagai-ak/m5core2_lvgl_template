@@ -1,8 +1,15 @@
 # M5Stack Core2でLVGLを使うための雛型
 
-VSCode + PlatformIO用．LVGLは9.2を使用．
+VSCode + PlatformIO用．LVGLは9.5.0を使用．
 
 ![demo](demo.gif)
+
+## 注意
+
+platformio.iniで m5stack/M5GFX@0.2.19 を指定．M5GFX@0.2.20以降でビルドに支障あり．
+
+https://github.com/m5stack/M5GFX/issues/197
+
 
 ## 雛型の動作
 
