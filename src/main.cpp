@@ -2,22 +2,22 @@
  * @file main.cpp
  * @author amagai
  * @brief Core2でVLGLを使うための雛型
- * @version 0.1
- * @date 2025-08-24
+ * @version 0.2
+ * @date 2026-05-24
  * 
  */
 
 /**
  * @mainpage M5Core2 + LVGL Template
  * @author amagai
- * @version 0.1
- * @copyright Copyright (c) 2025
- * 
+ * @version 0.2
+ * @copyright Copyright (c) 2026
+ * @date 2026-05-24
  * @section 概要
  * M5Stack Core2でLVGLを使うための雛型プロジェクトです．
  * LVGLの他に，ArduinoフレームワークとM5Unifiedライブラリを使用しています．
  * 
- * LVGLのバージョンは9.2.2を使用しています．https://docs.lvgl.io/9.2/
+ * LVGLのバージョンは9.5.0を使用しています．https://docs.lvgl.io/9.5/
  */
 
 #include <Arduino.h>
@@ -99,6 +99,6 @@ void loop()
     // LVGLのタスクハンドラを呼び出す
     lv_task_handler();
 
-    delay(5);
+    delay(10);
 }
 

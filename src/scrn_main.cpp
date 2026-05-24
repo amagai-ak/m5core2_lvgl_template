@@ -33,6 +33,9 @@ void ScreenMain::setup()
     // Setup code for the main screen
     ScreenBase::setup();
 
+    loopcounter = 0;
+    timercounter = 0;
+
     lv_obj_set_style_bg_color(lv_screen, lv_color_make(0, 0, 0), 0);
 
     label_hello = lv_label_create(lv_screen);
@@ -50,10 +53,10 @@ void ScreenMain::setup()
     lv_label_set_text(label, "Shutdown");
     lv_obj_center(label);
 
-    // カウンタ
+    // loopカウンタ
     label_counter = lv_label_create(lv_screen);
     lv_obj_set_style_text_font(label_counter, &myrica_m_24, 0);
-    lv_label_set_text(label_counter, "Counter: ");
+    lv_label_set_text(label_counter, "Loop: ");
     lv_obj_set_style_text_color(label_counter, lv_color_make(255, 255, 255), 0);
     lv_obj_align(label_counter, LV_ALIGN_CENTER, -100, 80);
 
@@ -64,17 +67,43 @@ void ScreenMain::setup()
     lv_obj_set_style_text_align(label_counter_val, LV_TEXT_ALIGN_RIGHT, 0);
     lv_obj_align(label_counter_val, LV_ALIGN_CENTER, 0, 80);
 
+    // タイマーカウンタ
+    label_timer = lv_label_create(lv_screen);
+    lv_obj_set_style_text_font(label_timer, &myrica_m_24, 0);
+    lv_label_set_text(label_timer, "Timer: ");
+    lv_obj_set_style_text_color(label_timer, lv_color_make(255, 255, 255), 0);
+    lv_obj_align(label_timer, LV_ALIGN_TOP_LEFT, 10, 10);
+
+    label_timer_val = lv_label_create(lv_screen);
+    lv_obj_set_style_text_font(label_timer_val, &myrica_m_24, 0);
+    lv_label_set_text(label_timer_val, "0");
+    lv_obj_set_style_text_color(label_timer_val, lv_color_make(255, 255, 255), 0);
+    lv_obj_set_style_text_align(label_timer_val, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_obj_align(label_timer_val, LV_ALIGN_TOP_LEFT, 100, 10);
+
     // スワイプジェスチャーの有効化
     lv_obj_add_event_cb(lv_screen, callback, LV_EVENT_GESTURE, this);
 
-    counter = 0;
+    // タイマーイベントの有効化.100msごとにon_timer()が呼び出されるように設定
+    lv_timer_create([](lv_timer_t *timer){
+        ScreenMain *scrn = static_cast<ScreenMain *>(lv_timer_get_user_data(timer));
+        scrn->on_timer();
+    }, 100, this);
+}
+
+
+void ScreenMain::on_timer(void)
+{
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%u", ++timercounter);
+    lv_label_set_text(label_timer_val, buf);
 }
 
 
 void ScreenMain::loop()
 {
     char buf[32];
-    snprintf(buf, sizeof(buf), "%u", ++counter);
+    snprintf(buf, sizeof(buf), "%u", ++loopcounter);
     lv_label_set_text(label_counter_val, buf);
 }
 
