@@ -1,4 +1,5 @@
 .pio
 .vscode
 *.bak
+work
 doxygen_html
