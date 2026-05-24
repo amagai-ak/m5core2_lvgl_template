@@ -21,11 +21,9 @@
  */
 
 #include <Arduino.h>
-#include <M5Unified.h>
 #include <time.h>
-
-// #define LV_CONF_INCLUDE_SIMPLE
 #include <lvgl.h>
+#include <M5Unified.h>
 
 #include "lvgl_setup.h"
 

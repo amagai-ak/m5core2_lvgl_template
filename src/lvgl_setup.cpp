@@ -1,5 +1,5 @@
-#include <M5Unified.h>
 #include <lvgl.h>
+#include <M5Unified.h>
 #include <esp_timer.h>
 
 #include "lvgl_setup.h"
