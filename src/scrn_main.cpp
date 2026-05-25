@@ -68,14 +68,16 @@ void ScreenMain::setup()
     lv_obj_align(label_counter_val, LV_ALIGN_CENTER, 0, 80);
 
     // タイマーカウンタ
+    // lv_font_montserrat_24は，include/lv_conf.hで有効化されている必要がある．
+    // デフォルトのlv_conf.hでは有効化されていないため，lv_conf.hの確認のためあえてこのフォントを使用している．
     label_timer = lv_label_create(lv_screen);
-    lv_obj_set_style_text_font(label_timer, &myrica_m_24, 0);
+    lv_obj_set_style_text_font(label_timer, &lv_font_montserrat_24, 0);
     lv_label_set_text(label_timer, "Timer: ");
     lv_obj_set_style_text_color(label_timer, lv_color_make(255, 255, 255), 0);
     lv_obj_align(label_timer, LV_ALIGN_TOP_LEFT, 10, 10);
 
     label_timer_val = lv_label_create(lv_screen);
-    lv_obj_set_style_text_font(label_timer_val, &myrica_m_24, 0);
+    lv_obj_set_style_text_font(label_timer_val, &lv_font_montserrat_24, 0);
     lv_label_set_text(label_timer_val, "0");
     lv_obj_set_style_text_color(label_timer_val, lv_color_make(255, 255, 255), 0);
     lv_obj_set_style_text_align(label_timer_val, LV_TEXT_ALIGN_RIGHT, 0);
